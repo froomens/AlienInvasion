@@ -54,7 +54,9 @@ var Game = new function() {
   
 
   // Handle Input
-  var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' };
+  // JASON'S ADDITION: LEFT SHIFT (16) TO BOMB
+  var KEY_CODES = { 37:'left', 39:'right', 32 :'fire', 16:'bomb'};
+  //  var KEY_CODES = { 37:'left', 39:'right', 32 :'fire'};
   this.keys = {};
 
   this.setupInput = function() {
@@ -329,7 +331,17 @@ Level.prototype.step = function(dt) {
           override = curShip[4];
 
       // Add a new enemy with the blueprint and override
-      this.board.add(new Enemy(enemy,override));
+	  // JASON'S ALTERATION: If statement to create a powerup instead of an enemy
+	  if (curShip[3] == 'powerup')
+	  {
+			this.board.add(new PowerUp(enemy,override));
+	  }
+	  else
+	  {
+			this.board.add(new Enemy(enemy,override));
+			
+	  }
+	  // END JASON'S ALTERATION: IF POWERUP
 
       // Increment the start time by the gap
       curShip[0] += curShip[2];
@@ -383,6 +395,9 @@ var TouchControls = function() {
     this.drawSquare(ctx,gutterWidth,yLoc,"\u25C0", Game.keys['left']);
     this.drawSquare(ctx,unitWidth + gutterWidth,yLoc,"\u25B6", Game.keys['right']);
     this.drawSquare(ctx,4*unitWidth,yLoc,"A",Game.keys['fire']);
+	// JASON'S ADDITION: BOMB SQUARE
+	this.drawSquare(ctx,3*unitWidth,yLoc,"B",Game.keys['bomb']);
+	// END JASON'S ADDITION: BOMB SQUARE
 
     ctx.restore();
   };
@@ -413,6 +428,12 @@ var TouchControls = function() {
         if(x > 4 * unitWidth) {
           Game.keys['fire'] = (e.type == 'touchstart');
         }
+		// JASON'S ADDITION: BOMB BUTTON TOUCH
+		if(x > 3 * unitWidth && x < 4 * unitWidth) {
+          //Game.keys['bomb'] = (e.type == 'touchstart');
+		  Game.keys['bomb'] = true;
+        }
+		// END JASON'S ADDITION: BOMB BUTTON TOUCH
       }
     }
   };
@@ -429,8 +450,8 @@ var TouchControls = function() {
 };
 
 
-var GamePoints = function() {
-  Game.points = 0;
+var GamePoints = function(pts) {
+  Game.points = pts;
 
   var pointsLength = 8;
 
@@ -444,6 +465,48 @@ var GamePoints = function() {
     while(i-- > 0) { zeros += "0"; }
 
     ctx.fillText(zeros + txt,10,20);
+    ctx.restore();
+
+  };
+
+  this.step = function(dt) { };
+};
+
+var BossLife = function(life) {
+
+  var pointsLength = 5;
+
+  this.draw = function(ctx) {
+    ctx.save();
+    ctx.font = "bold 18px arial";
+    ctx.fillStyle= "#FF0000";
+
+    var txt = "" + Math.round(life);
+    var i = pointsLength - txt.length, zeros = "";
+    while(i-- > 0) { zeros += "0"; }
+
+    ctx.fillText(zeros + txt,Game.width-55,20);
+    ctx.restore();
+
+  };
+
+  this.step = function(dt) { };
+};
+
+var PowerLevel = function(power) {
+
+  var pointsLength = 3;
+
+  this.draw = function(ctx) {
+    ctx.save();
+    ctx.font = "bold 18px arial";
+    ctx.fillStyle= "#0000FF";
+
+    var txt = "" + Math.round(power);
+    var i = pointsLength - txt.length, zeros = "";
+    while(i-- > 0) { zeros += "0"; }
+
+    ctx.fillText(zeros + txt,10,40);
     ctx.restore();
 
   };
